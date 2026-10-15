@@ -1,4 +1,4 @@
-import {STORAGE_KEY,MAX_ITEMS,EXAMPLES,validate,calculate,usagePlan,goalComparison,decodeRecords,remainingLabel} from './core.mjs';
+import {STORAGE_KEY,MAX_ITEMS,EXAMPLES,validate,calculate,usagePlan,goalComparison,budgetPlan,decodeRecords,remainingLabel} from './core.mjs';
 
 const $=id=>document.getElementById(id);
 const form=$('calculator');
@@ -90,6 +90,7 @@ function updateCalculation(announce=true){
 }
 function numberValue(id){const text=$(id).value.trim();return text===''?NaN:Number(text);}
 function updateScenarios(data,result){
+  updateBudget(data);
   const plan=usagePlan(data.price,numberValue('target-cost'),numberValue('uses-week'));
   const goal=goalComparison(data.price,numberValue('goal-total'),numberValue('goal-saved'));
   const goalName=$('goal-name').value.trim();
@@ -241,7 +242,7 @@ $('try-example').addEventListener('click',()=>{
 });
 for(const button of document.querySelectorAll('[data-scene]')){
   button.addEventListener('click',()=>selectScene(button.dataset.scene));
-  button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const scenes=['time','usage','goal'];let index=scenes.indexOf(button.dataset.scene);if(event.key==='Home')index=0;else if(event.key==='End')index=2;else index=(index+(event.key==='ArrowRight'?1:2))%3;selectScene(scenes[index],true);});
+  button.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const scenes=['budget','time','usage','goal'];let index=scenes.indexOf(button.dataset.scene);if(event.key==='Home')index=0;else if(event.key==='End')index=scenes.length-1;else index=(index+(event.key==='ArrowRight'?1:scenes.length-1))%scenes.length;selectScene(scenes[index],true);});
 }
 for(const button of document.querySelectorAll('[data-uses]'))button.addEventListener('click',()=>{fields.uses.value=button.dataset.uses;updateCalculation();});
 for(const id of ['target-cost','uses-week','goal-name','goal-total','goal-saved'])$(id).addEventListener('input',()=>updateScenarios(values(),calculate(values())));
@@ -289,4 +290,44 @@ setInterval(()=>{
     const bar=row.querySelector('.wish-progress span');if(bar)bar.style.width=Math.max(0,Math.min(100,(now-item.createdAt)/(item.dueAt-item.createdAt)*100))+'%';
   }
 },30000);
+
+function updateBudget(data=values()){
+ const payment=form.elements.payment.value,installment=payment==='installment';
+ $('budget-installment').hidden=!installment;$('budget-installment-note').hidden=!installment;
+ const map={cash:'budget-cash',expenses:'budget-expenses',debt:'budget-debt',reserveMonths:'budget-reserve',down:'budget-down',months:'budget-months',fee:'budget-fee'};
+ const v={price:data.price,income:data.income,payment};
+ for(const [key,id]of Object.entries(map))v[key]=numberValue(id);
+ const result=budgetPlan(v);
+ for(const [key,id]of Object.entries(map)){
+   const active=installment||!['down','months','fee'].includes(key);
+   const valid=!active||(Number.isFinite(v[key])&&v[key]>=0&&v[key]<=1e8&&(key!=='reserveMonths'||Number.isInteger(v[key])&&v[key]<=120)&&(key!=='months'||Number.isInteger(v[key])&&v[key]>=1&&v[key]<=120)&&(key!=='down'||v[key]<=v.price));
+   if(valid)$(id).removeAttribute('aria-invalid');else $(id).setAttribute('aria-invalid','true');
+ }
+ $('budget-error').textContent=result?'':'填写存款、必要开支和已有还款，没有填 0；预留月数为 0–120 的整数。分期需填写不超过价格的首付、1–120 期及总费用，并检查商品价格和收入。';
+ $('budget-results').hidden=!result;if(!result)return;
+ $('budget-cash-left').textContent=yuan.format(result.cashLeft);
+ $('budget-protected').textContent=yuan.format(result.reserve);
+ $('budget-payment-cost').textContent=installment?yuan.format(result.monthly)+'/月':'无';
+ $('budget-monthly-left').textContent=yuan.format(result.monthlyLeft)+'/月';
+ const verdict=result.upfrontShort?'现有存款不够支付'+(installment?'首付':'全款'):result.monthlyShort?'这笔消费后，每月收支会有缺口':result.reserveShort?'付得出，但会动用你预留的钱':result.monthlyLeft===0?'每月结余将为 0':'按这些数字，付款后仍有余量';
+ $('budget-verdict').textContent=verdict;
+ const details=[];
+ if(result.upfrontShort)details.push('当前付款还差 '+yuan.format(-result.cashLeft)+'，未假设额外借款。');
+ if(result.reserveShort)details.push('付款后比你设定的预留金额少 '+yuan.format(result.reserve-result.cashLeft)+'。');
+ if(result.monthlyShort)details.push('每月缺口 '+yuan.format(-result.monthlyLeft)+'，需由其他资金补足。');
+ if(!details.length)details.push('这只是当前数字下的余额，不代表未来收入和支出不会变化。');
+ $('budget-detail').textContent=details.join('');
+ $('budget-saving').textContent=result.gap===0?'在保留你设定的预留金额后，现有存款已能覆盖全款。':result.savingMonths===null?'保留预留金额后，全款还差 '+yuan.format(result.gap)+'；购买前每月结余不大于 0，暂时无法推算攒够日期。':'如果先攒钱再全款：保留预留金额后还差 '+yuan.format(result.gap)+'，按购买前每月结余 '+yuan.format(result.base)+'，约需 '+integer.format(result.savingMonths)+' 个月。';
+ $('budget-future').textContent=installment?(result.financed>0?'其中 '+yuan.format(result.financed)+' 商品本金延后支付；':'商品本金已由首付覆盖；')+'月供占用未来 '+v.months+' 个月的现金流。分期本身不直接等于负担过重。':'全款是否宽裕，仍要结合预留资金和每月结余一起看。';
+}
+for(const id of ['budget-cash','budget-expenses','budget-debt','budget-reserve','budget-down','budget-months','budget-fee'])$(id).addEventListener('input',()=>updateBudget());
+for(const radio of document.querySelectorAll('[name="payment"]'))radio.addEventListener('change',()=>updateBudget());
+$('budget-example').addEventListener('click',()=>{
+ fields.name.value='苹果手机';fields.price.value='16999';fields.income.value='6000';
+ $('budget-cash').value='0';$('budget-expenses').value='5000';$('budget-debt').value='0';$('budget-reserve').value='3';
+ $('budget-down').value='0';$('budget-months').value='12';$('budget-fee').value='0';
+ form.elements.payment.value='installment';updateCalculation();selectScene('budget');toast('已填入假设示例：存款 0、生活开支 5000、12 期零费用。请改成真实情况。');
+});
+
 records=load();updateCalculation(false);renderList();
+

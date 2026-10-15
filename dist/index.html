@@ -24,7 +24,7 @@
   <main class="shell" id="top">
     <section class="intro" aria-labelledby="page-title">
       <h1 id="page-title">买之前，先看一眼以后。</h1>
-      <p>一件想买的东西，三种不一样的看法。</p>
+      <p>一件想买的东西，多一个角度，看清这次消费。</p>
     </section>
 
     <form class="calculator" id="calculator" novalidate>
@@ -70,8 +70,20 @@
         <div class="receipt-cta"><button type="button" class="primary-button" id="generate-receipt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 15v5h16v-5"></path></svg>生成心动账单</button><p class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>收入不上传，也不会出现在账单里。</p></div>
       </section>
 
-      <section class="result-panel panel" aria-label="三种消费场景">
-        <div class="scenario-tabs" role="tablist" aria-label="切换消费场景"><button id="tab-time" type="button" role="tab" data-scene="time" aria-selected="false" aria-controls="scene-time" tabindex="-1">时间账</button><button id="tab-usage" type="button" role="tab" data-scene="usage" class="active" aria-selected="true" aria-controls="scene-usage" tabindex="0">使用账</button><button id="tab-goal" type="button" role="tab" data-scene="goal" aria-selected="false" aria-controls="scene-goal" tabindex="-1">另一种选择</button></div>
+      <section class="result-panel panel" aria-label="消费试算">
+        <div class="scenario-tabs" role="tablist" aria-label="切换消费场景"><button id="tab-budget" type="button" role="tab" data-scene="budget" class="active" aria-selected="true" aria-controls="scene-budget" tabindex="0">负担账</button><button id="tab-time" type="button" role="tab" data-scene="time" aria-selected="false" aria-controls="scene-time" tabindex="-1">时间账</button><button id="tab-usage" type="button" role="tab" data-scene="usage" aria-selected="false" aria-controls="scene-usage" tabindex="-1">使用账</button><button id="tab-goal" type="button" role="tab" data-scene="goal" aria-selected="false" aria-controls="scene-goal" tabindex="-1">另一种选择</button></div>
+        <div class="scene" id="scene-budget" role="tabpanel" aria-labelledby="tab-budget" tabindex="0">
+<h2 class="scene-title">买完以后，生活还宽裕吗？</h2><p class="scene-description">收入和价格沿用左侧填写的数字。再看看真正能支配的钱。</p>
+<button type="button" class="text-button" id="budget-example">试试：月薪 6000，买 16999 元手机</button>
+<div class="budget-grid"><div class="field"><label for="budget-cash">目前可动用存款（元）</label><div class="input-wrap"><input id="budget-cash" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="不含信用额度、不可动用资金" value="" aria-describedby="budget-error"></div></div><div class="field"><label for="budget-expenses">每月必要生活开支（元）</label><div class="input-wrap"><input id="budget-expenses" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="房租、吃饭、交通等" value="" aria-describedby="budget-error"></div></div><div class="field"><label for="budget-debt">已有每月还款（元）</label><div class="input-wrap"><input id="budget-debt" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="没有填 0；不含这次购买" value="" aria-describedby="budget-error"></div></div><div class="field"><label for="budget-reserve">想保留几个月的开支</label><div class="input-wrap"><input id="budget-reserve" type="number" min="0" max="120" step="1" inputmode="decimal" placeholder="由你设定" value="3" aria-describedby="budget-error"></div></div></div>
+<p class="scene-note">预留金额 =（必要生活开支 + 已有月供）× 月数；3 个月只是可修改的试算起点。</p>
+<fieldset class="budget-payment"><legend>这次怎么付款</legend><label><input type="radio" name="payment" value="cash" checked> 全款</label><label><input type="radio" name="payment" value="installment"> 分期</label></fieldset>
+<div id="budget-installment" class="budget-grid" hidden><div class="field"><label for="budget-down">首付（元）</label><div class="input-wrap"><input id="budget-down" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="" value="0" aria-describedby="budget-error"></div></div><div class="field"><label for="budget-months">分期期数（月）</label><div class="input-wrap"><input id="budget-months" type="number" min="0" max="120" step="1" inputmode="decimal" placeholder="" value="12" aria-describedby="budget-error"></div></div><div class="field"><label for="budget-fee">全部利息及手续费（元）</label><div class="input-wrap"><input id="budget-fee" type="number" min="0" max="100000000" step="0.01" inputmode="decimal" placeholder="以实际合同为准" value="0" aria-describedby="budget-error"></div></div></div>
+<p class="scene-note" id="budget-installment-note" hidden>按本金与全部费用平均分摊到每期；仅适用于等额月付试算，实际账单及尾期舍入以合同为准。</p>
+<p class="inline-error" id="budget-error" role="status"></p>
+<div id="budget-results" class="budget-results" hidden aria-live="polite"><h3 id="budget-verdict"></h3><p id="budget-detail"></p><dl><div><dt>付款后剩余存款</dt><dd id="budget-cash-left"></dd></div><div><dt>你设定的预留金额</dt><dd id="budget-protected"></dd></div><div><dt>这次新增月供</dt><dd id="budget-payment-cost"></dd></div><div><dt>购买后每月结余</dt><dd id="budget-monthly-left"></dd></div></dl><p id="budget-saving"></p><p id="budget-future"></p></div>
+<p class="scene-note subtle">按收入、开支不变试算，不构成信用评分。存款、开支和还款信息仅用于当前页面，不保存、不上传，也不放入分享账单。</p>
+</div>
         <div class="scene" id="scene-time" role="tabpanel" aria-labelledby="tab-time" hidden tabindex="0">
         <h2 id="result-title">这次心动，约等于</h2>
         <div class="time-result"><output id="time-cost">28.6</output><span>小时的工作</span></div>
@@ -85,7 +97,7 @@
         <p class="scene-thought" id="time-thought">这副耳机，约等于 3.6 个工作日的收入。</p>
         <p class="scene-note">时间只是一个换算视角，东西值不值得，还要看它能为你带来什么。</p>
         </div>
-        <div class="scene" id="scene-usage" role="tabpanel" aria-labelledby="tab-usage" tabindex="0">
+        <div class="scene" id="scene-usage" role="tabpanel" aria-labelledby="tab-usage" hidden tabindex="0">
           <h2 class="scene-title" id="usage-title">你会用满 <output id="needed-uses">130</output> 次吗？</h2>
           <p class="scene-description" id="usage-standard">把每次使用成本降到 ¥10，才达到你设定的标准。</p>
           <div class="scenario-switch"><span>如果它只被用过…</span><div role="group" aria-label="快速预演使用次数"><button type="button" data-uses="3" aria-pressed="false">3 次</button><button type="button" data-uses="30" aria-pressed="false">30 次</button><button type="button" data-uses="100" class="active" aria-pressed="true">100 次</button></div></div>
@@ -135,14 +147,14 @@
     <div class="dialog-heading"><h2 id="method-title">怎么算的？</h2><button type="button" class="icon-button" data-close="method-dialog" aria-label="关闭计算说明"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>
     <p class="dialog-lead">所有结果都来自你填写的数字。</p>
     <dl class="formula-list">
-      <div><dt>每小时收入</dt><dd>每月到手收入 ÷ 每月工作天数 ÷ 每天工作时长</dd></div>
+      <div><dt>负担账</dt><dd>每月结余 = 到手收入 − 必要生活开支 − 已有还款 − 本次月供。全款后存款 = 可动用存款 − 商品价格；分期后存款扣除首付。月供 =（价格 − 首付 + 全部费用）÷ 期数。攒钱月数按保留预留金额后的资金缺口 ÷ 购买前每月结余，向上取整；每月结余不大于 0 时不推算攒够日期。</dd></div><div><dt>每小时收入</dt><dd>每月到手收入 ÷ 每月工作天数 ÷ 每天工作时长</dd></div>
       <div><dt>需要工作的时间</dt><dd>商品价格 ÷ 每小时收入</dd></div>
       <div><dt>每次使用成本</dt><dd>商品价格 ÷ 预计使用次数</dd></div>
       <div><dt>占月收入比例</dt><dd>商品价格 ÷ 每月到手收入 × 100%</dd></div>
       <div><dt>用多少次才达到你的标准</dt><dd>商品价格 ÷ 你愿意承担的每次成本，向上取整数。所需周数 = 次数 ÷ 每周预计使用次数，再向上取整。</dd></div>
       <div><dt>另一种选择</dt><dd>商品价格 ÷ 你填写的目标金额。进度条展示目前已存，以及假设再存入商品价格后的进度，显示上限为 100%。</dd></div>
     </dl>
-    <p class="dialog-note">工作时间只是一个换算视角，不代表这件东西值不值得。这里没有扣除生活开支，也没有计入通勤、利息、维护或转售价值；使用次数由你估计。</p>
+    <p class="dialog-note">工作时间只是一个换算视角，不代表这件东西值不值得。时间账没有扣除生活开支，也没有计入通勤、维护或转售价值；使用次数由你估计。负担账单独计入你填写的开支、还款和分期总费用。</p>
     <p class="dialog-note">冷静期从加入清单时开始。关闭网页后仍按实际经过的时间计算，重新打开即可查看；本工具不会发送通知。</p>
     <p class="dialog-note">收入不会上传，也不会保存。清单仅保存在当前浏览器；清除网站数据、使用无痕模式或更换设备可能导致记录丢失。</p>
     <button type="button" class="primary-button" data-close="method-dialog">明白了</button>
@@ -160,3 +172,4 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toast-message"></span><button type="button" id="toast-undo" hidden>撤销</button></div>
 </body>
 </html>
+

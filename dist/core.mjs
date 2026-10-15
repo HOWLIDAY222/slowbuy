@@ -56,3 +56,19 @@ export function remainingLabel(dueAt, now=Date.now()) {
   if(hours) return `还剩 ${hours} 小时${mins ? ` ${mins} 分钟` : ''}`;
   return `还剩 ${mins} 分钟`;
 }
+
+
+// Monetary arithmetic uses cents so boundary decisions do not depend on float noise.
+export function budgetPlan(v) {
+  const keys=['price','income','cash','expenses','debt','reserveMonths'];
+  if(keys.some(k=>!Number.isFinite(v[k])||v[k]<0||v[k]>1e8)||v.price<0.01||!Number.isInteger(v.reserveMonths)||v.reserveMonths>120||!['cash','installment'].includes(v.payment))return null;
+  const cents=n=>Math.round(n*100);
+  const price=cents(v.price),income=cents(v.income),cash=cents(v.cash),expenses=cents(v.expenses),debt=cents(v.debt);
+  const installment=v.payment==='installment';
+  if(installment&&(!Number.isFinite(v.down)||v.down<0||cents(v.down)>price||!Number.isFinite(v.fee)||v.fee<0||v.fee>1e8||!Number.isInteger(v.months)||v.months<1||v.months>120))return null;
+  const upfront=installment?cents(v.down):price,financed=price-upfront;
+  const monthly=installment?(financed+cents(v.fee))/v.months:0;
+  const base=income-expenses-debt,reserve=(expenses+debt)*v.reserveMonths;
+  const cashLeft=cash-upfront,available=Math.max(0,cash-reserve),gap=Math.max(0,price-available),monthlyLeft=base-monthly;
+  return {cashLeft:cashLeft/100,reserve:reserve/100,monthly:monthly/100,monthlyLeft:monthlyLeft/100,base:base/100,financed:financed/100,gap:gap/100,savingMonths:gap===0?0:base>0?Math.ceil(gap/base):null,upfrontShort:cashLeft<0,reserveShort:cashLeft<reserve,monthlyShort:monthlyLeft<0,installment};
+}
