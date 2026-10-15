@@ -179,7 +179,7 @@ function initSmallPurchases({toast}) {
   const get=id=>document.getElementById(id);
   const money=new Intl.NumberFormat('zh-CN',{style:'currency',currency:'CNY'});
   const when=new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  let items=[],canStore=true,night=false,view='single',reviewId=null;
+  let items=[],canStore=true,night=false,view='single';
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   function warning(text){get('small-storage-warning').textContent=text;get('small-storage-warning').hidden=!text;}
   function refresh(){
@@ -204,10 +204,10 @@ function initSmallPurchases({toast}) {
     refresh();render();
   }
   function updateProjection(summary){
-    const count=Number(get('small-frequency').value),valid=Number.isInteger(count)&&count>=1&&count<=31;
-    get('small-frequency').setAttribute('aria-invalid',String(!valid));
+    const text=get('small-frequency').value.trim(),count=Number(text),valid=Number.isInteger(count)&&count>=1&&count<=31;
+    get('small-frequency').setAttribute('aria-invalid',String(text!==''&&!valid));
     const total=(Math.round(summary.todayPlanned*100)+Math.round(summary.todayBought*100))/100;
-    get('small-projection-text').textContent=!valid?'类似天数请填 1–31 的整数。':total===0?'先记下一笔，再看看累加后的金额。':`今天 ${summary.todayCount} 笔合计 ${money.format(total)}。如果每月有 ${count} 天都买下这些，一个月就是 ${money.format(Math.round(total*100)*count/100)}。`;
+    get('small-projection-text').textContent=text===''?'填入你想试算的次数，再看结果。':!valid?'次数请填 1–31 的整数。':total===0?'今天还没有待买或已买金额，先记下一笔。':`仅作假设：按今天合计 ${money.format(total)}，每月重复 ${count} 次，合计 ${money.format(Math.round(total*100)*count/100)}。这不是本月实际支出。`;
   }
   function statusText(item,now){
     if(item.status==='bought')return '已买 · '+when.format(item.decidedAt||item.createdAt);
@@ -217,7 +217,12 @@ function initSmallPurchases({toast}) {
   function render(){
     const now=Date.now(),summary=summarizeSmall(items,now),today=dailyKey(now);
     get('small-today-bought').textContent=money.format(summary.todayBought);get('small-today-planned').textContent=money.format(summary.todayPlanned);get('small-month-bought').textContent=money.format(summary.monthBought);
-    get('small-stat-note').textContent='按设备本地日期统计；已买按确认购买日计入。待买不算已支出，放下不算已节省。';
+    get('small-stat-note').textContent='只统计手动记录的小单；待买不算已支出。';
+    const boughtCount=items.filter(i=>i.status==='bought'&&dailyKey(i.decidedAt||i.createdAt)===today).length;
+    const plannedCount=summary.todayCount-boughtCount;
+    const total=(Math.round(summary.todayBought*100)+Math.round(summary.todayPlanned*100))/100;
+    const spent=boughtCount?`今天已买 ${boughtCount} 笔，共 ${money.format(summary.todayBought)}。`:'今天还没有记过已买支出。';
+    get('small-reality').textContent=summary.todayCount===0?'先记下一笔，看看今天已经花了多少、还有多少待买。':spent+(plannedCount?`今天新记的 ${plannedCount} 笔待买共 ${money.format(summary.todayPlanned)}；如果都买下，今天已买将为 ${money.format(total)}。`:'今天没有新记的待买项。');
     get('small-pending-count').textContent=items.filter(i=>i.status==='planned').length+' 笔待决定';updateProjection(summary);
     const all=get('small-history').checked;
     const visible=items.filter(i=>all||i.status==='planned'||dailyKey(i.decidedAt||i.createdAt)===today).sort((a,b)=>(a.status==='planned'?0:1)-(b.status==='planned'?0:1)||b.createdAt-a.createdAt);
@@ -228,12 +233,12 @@ function initSmallPurchases({toast}) {
       const main=node('div','small-item-main');main.append(node('h4','',item.name),node('p','',statusText(item,now)));
       const price=node('strong','small-item-price',money.format(item.price)),actions=node('div','small-item-actions');
       const action=(name,label)=>{const button=node('button','',label);button.type='button';button.dataset.smallAction=name;button.setAttribute('aria-label',label+'：'+item.name);actions.append(button);};
-      if(item.status==='planned')action('review',item.reviewAt&&item.reviewAt>now?'提前想一想':'看看还想不想买');
+      if(item.status==='planned'){action('later','明天再看');action('bought','已买');action('released','不买了');}
       else action('reopen',item.status==='bought'?'改为待买':'重新待买');
       action('delete','移除');row.append(main,price,actions);fragment.append(row);
     }
     get('small-list').replaceChildren(fragment);get('small-empty').hidden=visible.length>0;
-    if(focusId){const row=[...get('small-list').children].find(r=>r.dataset.smallId===focusId);row?.querySelector(`[data-small-action="${focusAction}"]`)?.focus({preventScroll:true});}
+    if(focusId){const row=[...get('small-list').children].find(r=>r.dataset.smallId===focusId);const target=row?.querySelector(`[data-small-action="${focusAction}"]`);(target||get('small-reality')).focus({preventScroll:true});}
   }
   function add(status){
     const input=get('small-price'),price=Number(input.value),cents=Math.round(price*100);
@@ -245,16 +250,6 @@ function initSmallPurchases({toast}) {
     items.unshift(item);persist();render();get('small-form').reset();get('small-error').textContent='';input.removeAttribute('aria-invalid');get('small-name').focus();
     toast(canStore?(night?'记下了，'+when.format(item.reviewAt)+'再看。':status==='bought'?'已记为实际支出。':'已记下，待买不计入支出。'):'已加入本次记录，但浏览器未能保存。');
   }
-  function openReview(id){
-    refresh();const item=items.find(i=>i.id===id&&i.status==='planned');if(!item){render();return;}
-    reviewId=id;get('small-review-product').textContent=item.name+' · '+money.format(item.price);
-    get('small-review-time').textContent=item.reviewAt&&item.reviewAt>Date.now()?'原定 '+when.format(item.reviewAt)+' 再看，现在也可以提前复盘。':'从单件价格里抬起头，也看看今天的小单合计。';
-    get('small-review-title').textContent=item.reviewAt?'现在，还想买吗？':'这件小单，想好了吗？';get('small-review-dialog').showModal();
-  }
-  function decide(status){
-    refresh();const item=items.find(i=>i.id===reviewId&&i.status==='planned');if(!item){get('small-review-dialog').close();render();toast('这笔小单已在其他页面更新，请重新查看。');return;}
-    item.status=status;item.decidedAt=Date.now();delete item.reviewAt;persist();get('small-review-dialog').close();render();toast(status==='bought'?'已计入确认购买当天的支出。':'已放下，不会记成已经省下的钱。');
-  }
   for(const button of document.querySelectorAll('[data-tool]'))button.addEventListener('click',()=>changeView(button.dataset.tool));
   for(const link of document.querySelectorAll('a[href="#calculator"],a[href="#wishlist"]'))link.addEventListener('click',()=>changeView('single'));
   get('small-night-toggle').addEventListener('click',()=>changeView(night?'small':'night'));
@@ -262,13 +257,20 @@ function initSmallPurchases({toast}) {
   get('small-frequency').addEventListener('input',()=>updateProjection(summarizeSmall(items,Date.now())));get('small-history').addEventListener('change',render);
   get('small-list').addEventListener('click',event=>{
     const button=event.target.closest('[data-small-action]');if(!button)return;const id=button.closest('[data-small-id]').dataset.smallId;
-    if(button.dataset.smallAction==='review'){openReview(id);return;}
+    const action=button.dataset.smallAction;
     refresh();const index=items.findIndex(i=>i.id===id);if(index<0){render();return;}
-    if(button.dataset.smallAction==='reopen'){const wasBought=items[index].status==='bought';items[index].status='planned';items[index].createdAt=Date.now();delete items[index].decidedAt;items[index].reviewAt=nextMorning(Date.now());persist();render();toast(wasBought?'已改为待买，并从已买统计中移除。':'已重新留到下个早上。');}
-    else {const removed=items.splice(index,1)[0];persist();render();toast('已移除小单。',()=>{refresh();if(items.length<MAX_SMALL&&!items.some(i=>i.id===removed.id))items.unshift(removed);persist();render();toast('小单已恢复。');});}
+    if(['later','bought','released'].includes(action)){
+      const item=items[index];if(item.status!=='planned'){render();toast('这笔小单已在其他页面更新，请重新查看。');return;}
+      const before={...item};
+      if(action==='later'){const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);tomorrow.setHours(9,0,0,0);item.reviewAt=tomorrow.getTime();}
+      else {item.status=action;item.decidedAt=Date.now();delete item.reviewAt;}
+      const after={...item};persist();render();
+      const message=action==='later'?'已留到 '+when.format(item.reviewAt)+' 再看。':action==='bought'?'已记为今天的实际支出。':'已放下，不计入支出。';
+      toast(message,()=>{refresh();const current=items.find(i=>i.id===before.id);if(!current||current.status!==after.status||current.decidedAt!==after.decidedAt||current.reviewAt!==after.reviewAt){render();toast('记录已更新，无法撤销之前的操作。');return;}Object.keys(current).forEach(k=>delete current[k]);Object.assign(current,before);persist();render();toast('已撤销这次操作。');});
+    }
+    else if(action==='reopen'){const wasBought=items[index].status==='bought';items[index].status='planned';items[index].createdAt=Date.now();delete items[index].decidedAt;items[index].reviewAt=nextMorning(Date.now());persist();render();toast(wasBought?'已改为待买，并从已买统计中移除。':'已重新留到下个早上。');}
+    else if(action==='delete'){const removed=items.splice(index,1)[0];persist();render();toast('已移除小单。',()=>{refresh();if(items.length<MAX_SMALL&&!items.some(i=>i.id===removed.id))items.unshift(removed);persist();render();toast('小单已恢复。');});}
   });
-  get('small-release').addEventListener('click',()=>decide('released'));get('small-bought').addEventListener('click',()=>decide('bought'));
-  get('small-later').addEventListener('click',()=>{refresh();const item=items.find(i=>i.id===reviewId&&i.status==='planned');if(item){item.reviewAt=nextMorning(Date.now());persist();}get('small-review-dialog').close();render();toast(item?'再给自己留到下个早上。':'这笔小单已在其他页面更新，请重新查看。');});
   window.addEventListener('storage',event=>{if(event.key===SMALL_KEY||event.key===null){refresh();render();}});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refresh();render();}});
   setInterval(()=>{if(document.visibilityState==='visible'&&view!=='single')render();},60000);

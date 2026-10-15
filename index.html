@@ -28,6 +28,10 @@
 @media(max-width:1050px){.small-tool{padding:24px}.small-form{grid-template-columns:minmax(0,1.3fr) minmax(120px,.8fr)}.small-entry-buttons{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;padding-top:0;align-items:center}.night-mode .small-entry-buttons{padding-top:0;display:block}.small-stats output{font-size:27px}.small-item{grid-template-columns:minmax(0,1fr) auto;gap:12px}.small-item-actions{grid-column:1/-1;justify-content:flex-end}}
 @media(max-width:650px){.tool-modes{width:100%;margin-bottom:17px}.tool-modes button{flex:1;min-width:0;font-size:12px;padding:11px 6px;white-space:nowrap}.small-tool{padding:19px 16px}.small-heading{align-items:flex-start;flex-direction:column;gap:10px}.small-heading h2{font-size:23px}.small-heading p:last-child{font-size:12px}.small-eyebrow{font-size:10px;margin-bottom:7px}.small-stats{gap:7px;margin-top:19px}.small-stats>div{padding:13px 9px;border-radius:9px}.small-stats span{font-size:10px}.small-stats output{font-size:21px;letter-spacing:-.8px}.small-stat-note{font-size:10px}.small-form{margin-top:20px;gap:12px;grid-template-columns:minmax(0,1fr) minmax(95px,.65fr)}.small-form label{font-size:12px}.small-form label span{font-size:10px;margin-left:2px}.small-entry-buttons{display:flex;flex-direction:column;gap:5px}.small-entry-buttons .primary-button{min-height:46px}.small-entry-buttons .secondary-button{min-height:34px}.small-entry-buttons button{width:100%}.night-mode .small-form{padding:13px}.small-projection{grid-template-columns:1fr;gap:12px;padding-block:17px}.small-projection h3{font-size:15px}.small-projection>p{font-size:17px}.small-projection label{font-size:12px}.small-projection div>p{font-size:10px}.small-list-heading{align-items:flex-start;flex-direction:column;gap:9px;margin-top:22px}.small-list-heading h3{font-size:16px}.small-item{padding:14px;gap:10px}.small-item-main h4{font-size:14px}.small-item-price{font-size:18px;max-width:125px}.small-item-actions{justify-content:flex-start}.small-item-actions button{font-size:11px}.small-night-note{font-size:12px;padding:12px}.small-privacy{font-size:10px!important}}
 
+/* Keep actual totals primary; hypothetical spending is opt-in. */
+.small-reality{padding:17px 19px;margin:19px 0 0;background:var(--mint);border:1px solid #cddfd2;border-radius:10px;font-size:17px;font-weight:600;line-height:1.9;overflow-wrap:anywhere}.small-reality:focus-visible{outline:3px solid #538f76;outline-offset:3px}.small-item-actions{flex-wrap:wrap;max-width:380px}.small-item-actions button{min-height:40px}.small-optional{margin-top:18px;border-top:1px solid #d7e3da;padding-top:15px}.small-optional summary{font-size:13px;line-height:1.8;cursor:pointer;width:fit-content;color:#5d7566}.small-optional summary span{font-size:11px;margin-left:6px;color:#829284}.small-optional summary:focus-visible{outline:3px solid #538f76;outline-offset:4px}.small-optional .small-projection{margin:10px 0 0;padding:14px 0 0;border:0}.small-optional .small-projection h3{font-size:15px}.small-optional .small-projection>p{font-size:15px;font-weight:400}.small-optional input::placeholder{font-size:11px}.small-data-note .small-privacy{font-size:12px!important;line-height:1.9;margin-top:10px}.small-data-note{margin-top:13px}.small-form>.inline-error:empty{display:none}
+@media(max-width:650px){.small-reality{font-size:14px;padding:13px 14px;margin-top:17px}.small-item-actions{width:100%;gap:7px}.small-item-actions button{min-height:42px;padding:8px 10px}.small-item-actions button[data-small-action=delete]{margin-left:auto}.small-optional{margin-top:17px;padding-top:13px}.small-optional summary{font-size:12px}.small-optional .small-projection>p{font-size:13px}.small-data-note .small-privacy{font-size:12px!important}}
+
 /* Cash flow scenario */
 .scenario-tabs button{flex:1;min-width:0;white-space:nowrap}.budget-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-top:17px}.budget-grid .field{margin:0}.budget-grid label{font-size:13px}.budget-grid input{font-size:16px}.budget-grid input::placeholder{font-size:11px}.budget-payment{border:0;padding:0;margin:17px 0;display:flex;gap:20px;flex-wrap:wrap;font-size:14px}.budget-payment legend{font-size:13px;margin-bottom:9px}.budget-payment label{display:flex;align-items:center;gap:7px;cursor:pointer}.budget-payment input{accent-color:var(--green)}.budget-results{margin:18px 0 12px;padding:17px;background:#fff;border:1px solid #cadfd0;border-radius:12px;overflow-wrap:anywhere}.budget-results h3{margin:0 0 8px;font-size:20px}.budget-results p{font-size:13px;line-height:1.8;margin-top:8px;color:#536b5b}.budget-results dl{margin:14px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px}.budget-results dt{font-size:12px;color:#65747a}.budget-results dd{margin:4px 0 0;font-size:19px;font-weight:650;font-variant-numeric:tabular-nums}.budget-grid input[aria-invalid=true]{background:#fff8f3}
 @media(max-width:650px){.scenario-tabs button{font-size:13px;padding-inline:5px}.budget-grid{gap:12px}.budget-grid label{font-size:12px}.budget-results{padding:14px}.budget-results dd{font-size:16px}.budget-results h3{font-size:18px}}
@@ -216,7 +220,7 @@ function initSmallPurchases({toast}) {
   const get=id=>document.getElementById(id);
   const money=new Intl.NumberFormat('zh-CN',{style:'currency',currency:'CNY'});
   const when=new Intl.DateTimeFormat('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  let items=[],canStore=true,night=false,view='single',reviewId=null;
+  let items=[],canStore=true,night=false,view='single';
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   function warning(text){get('small-storage-warning').textContent=text;get('small-storage-warning').hidden=!text;}
   function refresh(){
@@ -241,10 +245,10 @@ function initSmallPurchases({toast}) {
     refresh();render();
   }
   function updateProjection(summary){
-    const count=Number(get('small-frequency').value),valid=Number.isInteger(count)&&count>=1&&count<=31;
-    get('small-frequency').setAttribute('aria-invalid',String(!valid));
+    const text=get('small-frequency').value.trim(),count=Number(text),valid=Number.isInteger(count)&&count>=1&&count<=31;
+    get('small-frequency').setAttribute('aria-invalid',String(text!==''&&!valid));
     const total=(Math.round(summary.todayPlanned*100)+Math.round(summary.todayBought*100))/100;
-    get('small-projection-text').textContent=!valid?'类似天数请填 1–31 的整数。':total===0?'先记下一笔，再看看累加后的金额。':`今天 ${summary.todayCount} 笔合计 ${money.format(total)}。如果每月有 ${count} 天都买下这些，一个月就是 ${money.format(Math.round(total*100)*count/100)}。`;
+    get('small-projection-text').textContent=text===''?'填入你想试算的次数，再看结果。':!valid?'次数请填 1–31 的整数。':total===0?'今天还没有待买或已买金额，先记下一笔。':`仅作假设：按今天合计 ${money.format(total)}，每月重复 ${count} 次，合计 ${money.format(Math.round(total*100)*count/100)}。这不是本月实际支出。`;
   }
   function statusText(item,now){
     if(item.status==='bought')return '已买 · '+when.format(item.decidedAt||item.createdAt);
@@ -254,7 +258,12 @@ function initSmallPurchases({toast}) {
   function render(){
     const now=Date.now(),summary=summarizeSmall(items,now),today=dailyKey(now);
     get('small-today-bought').textContent=money.format(summary.todayBought);get('small-today-planned').textContent=money.format(summary.todayPlanned);get('small-month-bought').textContent=money.format(summary.monthBought);
-    get('small-stat-note').textContent='按设备本地日期统计；已买按确认购买日计入。待买不算已支出，放下不算已节省。';
+    get('small-stat-note').textContent='只统计手动记录的小单；待买不算已支出。';
+    const boughtCount=items.filter(i=>i.status==='bought'&&dailyKey(i.decidedAt||i.createdAt)===today).length;
+    const plannedCount=summary.todayCount-boughtCount;
+    const total=(Math.round(summary.todayBought*100)+Math.round(summary.todayPlanned*100))/100;
+    const spent=boughtCount?`今天已买 ${boughtCount} 笔，共 ${money.format(summary.todayBought)}。`:'今天还没有记过已买支出。';
+    get('small-reality').textContent=summary.todayCount===0?'先记下一笔，看看今天已经花了多少、还有多少待买。':spent+(plannedCount?`今天新记的 ${plannedCount} 笔待买共 ${money.format(summary.todayPlanned)}；如果都买下，今天已买将为 ${money.format(total)}。`:'今天没有新记的待买项。');
     get('small-pending-count').textContent=items.filter(i=>i.status==='planned').length+' 笔待决定';updateProjection(summary);
     const all=get('small-history').checked;
     const visible=items.filter(i=>all||i.status==='planned'||dailyKey(i.decidedAt||i.createdAt)===today).sort((a,b)=>(a.status==='planned'?0:1)-(b.status==='planned'?0:1)||b.createdAt-a.createdAt);
@@ -265,12 +274,12 @@ function initSmallPurchases({toast}) {
       const main=node('div','small-item-main');main.append(node('h4','',item.name),node('p','',statusText(item,now)));
       const price=node('strong','small-item-price',money.format(item.price)),actions=node('div','small-item-actions');
       const action=(name,label)=>{const button=node('button','',label);button.type='button';button.dataset.smallAction=name;button.setAttribute('aria-label',label+'：'+item.name);actions.append(button);};
-      if(item.status==='planned')action('review',item.reviewAt&&item.reviewAt>now?'提前想一想':'看看还想不想买');
+      if(item.status==='planned'){action('later','明天再看');action('bought','已买');action('released','不买了');}
       else action('reopen',item.status==='bought'?'改为待买':'重新待买');
       action('delete','移除');row.append(main,price,actions);fragment.append(row);
     }
     get('small-list').replaceChildren(fragment);get('small-empty').hidden=visible.length>0;
-    if(focusId){const row=[...get('small-list').children].find(r=>r.dataset.smallId===focusId);row?.querySelector(`[data-small-action="${focusAction}"]`)?.focus({preventScroll:true});}
+    if(focusId){const row=[...get('small-list').children].find(r=>r.dataset.smallId===focusId);const target=row?.querySelector(`[data-small-action="${focusAction}"]`);(target||get('small-reality')).focus({preventScroll:true});}
   }
   function add(status){
     const input=get('small-price'),price=Number(input.value),cents=Math.round(price*100);
@@ -282,16 +291,6 @@ function initSmallPurchases({toast}) {
     items.unshift(item);persist();render();get('small-form').reset();get('small-error').textContent='';input.removeAttribute('aria-invalid');get('small-name').focus();
     toast(canStore?(night?'记下了，'+when.format(item.reviewAt)+'再看。':status==='bought'?'已记为实际支出。':'已记下，待买不计入支出。'):'已加入本次记录，但浏览器未能保存。');
   }
-  function openReview(id){
-    refresh();const item=items.find(i=>i.id===id&&i.status==='planned');if(!item){render();return;}
-    reviewId=id;get('small-review-product').textContent=item.name+' · '+money.format(item.price);
-    get('small-review-time').textContent=item.reviewAt&&item.reviewAt>Date.now()?'原定 '+when.format(item.reviewAt)+' 再看，现在也可以提前复盘。':'从单件价格里抬起头，也看看今天的小单合计。';
-    get('small-review-title').textContent=item.reviewAt?'现在，还想买吗？':'这件小单，想好了吗？';get('small-review-dialog').showModal();
-  }
-  function decide(status){
-    refresh();const item=items.find(i=>i.id===reviewId&&i.status==='planned');if(!item){get('small-review-dialog').close();render();toast('这笔小单已在其他页面更新，请重新查看。');return;}
-    item.status=status;item.decidedAt=Date.now();delete item.reviewAt;persist();get('small-review-dialog').close();render();toast(status==='bought'?'已计入确认购买当天的支出。':'已放下，不会记成已经省下的钱。');
-  }
   for(const button of document.querySelectorAll('[data-tool]'))button.addEventListener('click',()=>changeView(button.dataset.tool));
   for(const link of document.querySelectorAll('a[href="#calculator"],a[href="#wishlist"]'))link.addEventListener('click',()=>changeView('single'));
   get('small-night-toggle').addEventListener('click',()=>changeView(night?'small':'night'));
@@ -299,13 +298,20 @@ function initSmallPurchases({toast}) {
   get('small-frequency').addEventListener('input',()=>updateProjection(summarizeSmall(items,Date.now())));get('small-history').addEventListener('change',render);
   get('small-list').addEventListener('click',event=>{
     const button=event.target.closest('[data-small-action]');if(!button)return;const id=button.closest('[data-small-id]').dataset.smallId;
-    if(button.dataset.smallAction==='review'){openReview(id);return;}
+    const action=button.dataset.smallAction;
     refresh();const index=items.findIndex(i=>i.id===id);if(index<0){render();return;}
-    if(button.dataset.smallAction==='reopen'){const wasBought=items[index].status==='bought';items[index].status='planned';items[index].createdAt=Date.now();delete items[index].decidedAt;items[index].reviewAt=nextMorning(Date.now());persist();render();toast(wasBought?'已改为待买，并从已买统计中移除。':'已重新留到下个早上。');}
-    else {const removed=items.splice(index,1)[0];persist();render();toast('已移除小单。',()=>{refresh();if(items.length<MAX_SMALL&&!items.some(i=>i.id===removed.id))items.unshift(removed);persist();render();toast('小单已恢复。');});}
+    if(['later','bought','released'].includes(action)){
+      const item=items[index];if(item.status!=='planned'){render();toast('这笔小单已在其他页面更新，请重新查看。');return;}
+      const before={...item};
+      if(action==='later'){const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);tomorrow.setHours(9,0,0,0);item.reviewAt=tomorrow.getTime();}
+      else {item.status=action;item.decidedAt=Date.now();delete item.reviewAt;}
+      const after={...item};persist();render();
+      const message=action==='later'?'已留到 '+when.format(item.reviewAt)+' 再看。':action==='bought'?'已记为今天的实际支出。':'已放下，不计入支出。';
+      toast(message,()=>{refresh();const current=items.find(i=>i.id===before.id);if(!current||current.status!==after.status||current.decidedAt!==after.decidedAt||current.reviewAt!==after.reviewAt){render();toast('记录已更新，无法撤销之前的操作。');return;}Object.keys(current).forEach(k=>delete current[k]);Object.assign(current,before);persist();render();toast('已撤销这次操作。');});
+    }
+    else if(action==='reopen'){const wasBought=items[index].status==='bought';items[index].status='planned';items[index].createdAt=Date.now();delete items[index].decidedAt;items[index].reviewAt=nextMorning(Date.now());persist();render();toast(wasBought?'已改为待买，并从已买统计中移除。':'已重新留到下个早上。');}
+    else if(action==='delete'){const removed=items.splice(index,1)[0];persist();render();toast('已移除小单。',()=>{refresh();if(items.length<MAX_SMALL&&!items.some(i=>i.id===removed.id))items.unshift(removed);persist();render();toast('小单已恢复。');});}
   });
-  get('small-release').addEventListener('click',()=>decide('released'));get('small-bought').addEventListener('click',()=>decide('bought'));
-  get('small-later').addEventListener('click',()=>{refresh();const item=items.find(i=>i.id===reviewId&&i.status==='planned');if(item){item.reviewAt=nextMorning(Date.now());persist();}get('small-review-dialog').close();render();toast(item?'再给自己留到下个早上。':'这笔小单已在其他页面更新，请重新查看。');});
   window.addEventListener('storage',event=>{if(event.key===SMALL_KEY||event.key===null){refresh();render();}});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refresh();render();}});
   setInterval(()=>{if(document.visibilityState==='visible'&&view!=='single')render();},60000);
@@ -679,9 +685,10 @@ initSmallPurchases({toast});
       <p class="small-stat-note" id="small-stat-note">待买不算已支出，放下不算已节省。</p>
       <form id="small-form" class="small-form" novalidate><div class="field"><label for="small-name">想买什么 <span>可不填</span></label><div class="input-wrap"><input type="text" id="small-name" maxlength="60" placeholder="比如：又一件打折的 T 恤" autocomplete="off"></div></div><div class="field"><label for="small-price">这一笔多少钱</label><div class="input-wrap"><span class="affix" aria-hidden="true">¥</span><input type="number" id="small-price" min="0.01" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00" required aria-describedby="small-error"></div></div><div class="small-entry-buttons"><button type="submit" class="primary-button" id="small-add">先记下，暂时不买</button><button type="button" class="secondary-button" id="small-add-bought">已经买了，记一笔</button></div><p class="inline-error" id="small-error" role="status"></p></form>
       <p id="small-night-note" class="small-night-note" hidden>现在只做一件事：记下，先不付款。下一个早上 9 点再一起看。网页不会拦截购物，也不会主动推送提醒。</p>
-      <div class="small-projection"><div><h3>如果这样的消费，不止一次呢？</h3><p>按今天已买 + 待买合计试算；假设待买也全部买下，不是实际支出预测。</p></div><label for="small-frequency">每月类似 <input type="number" id="small-frequency" value="8" min="1" max="31" step="1" inputmode="numeric" aria-describedby="small-projection-text"> 天</label><p id="small-projection-text" aria-live="polite">先记下一笔，再看看累加后的金额。</p></div>
+      <p class="small-reality" id="small-reality" role="status" tabindex="-1">先记下一笔，看看今天已经花了多少、还有多少待买。</p>
       <div class="small-list-heading"><h3>记下来的小单 <span id="small-pending-count"></span></h3><label for="small-history"><input type="checkbox" id="small-history"> 显示全部历史</label></div><p id="small-empty" class="empty-state">还没有小单。下次想说“才几十块”时，先记在这里。</p><div id="small-list" class="small-list"></div>
-      <p class="scene-note subtle small-privacy">仅统计你手动记录的小单，不读取购物平台或支付账单，也不与单件冷静清单合并。数据只保存在当前浏览器；清除数据或更换设备可能丢失。日期和早上 9 点按设备本地时区计算。</p>
+      <details class="small-optional" id="small-projection-details"><summary>重复消费试算 <span>可选</span></summary><div class="small-projection"><div><h3>如果每月重复这样的消费</h3><p>用今天已买与待买合计作假设。不代表你会重复购买，也不会计入已买金额。</p></div><label for="small-frequency">假设每月出现 <input type="number" id="small-frequency" min="1" max="31" step="1" inputmode="numeric" placeholder="次数" aria-describedby="small-projection-text"> 次</label><p id="small-projection-text" aria-live="polite">填入你想试算的次数，再看结果。</p></div></details>
+      <details class="small-optional small-data-note"><summary>数据与统计说明</summary><p class="scene-note small-privacy">仅统计你手动记录的小单，不读取购物平台或支付账单，也不与单件冷静清单合并。已买按确认购买日统计，今天待买按加入日统计；之前留下的待买项仍会显示在列表里。数据只保存在当前浏览器；清除数据或更换设备可能丢失。日期和早上 9 点按设备本地时区计算。放下不等于实际节省。</p></details>
     </section>
     <div id="single-tool">
     <form class="calculator" id="calculator" novalidate>
@@ -811,7 +818,7 @@ initSmallPurchases({toast});
       <div><dt>占月收入比例</dt><dd>商品价格 ÷ 每月到手收入 × 100%</dd></div>
       <div><dt>用多少次才达到你的标准</dt><dd>商品价格 ÷ 你愿意承担的每次成本，向上取整数。所需周数 = 次数 ÷ 每周预计使用次数，再向上取整。</dd></div>
       <div><dt>另一种选择</dt><dd>商品价格 ÷ 你填写的目标金额。进度条展示目前已存，以及假设再存入商品价格后的进度，显示上限为 100%。</dd></div>
-      <div><dt>小额累加与睡前模式</dt><dd>今日待买按加入日期累计，今日已买和本月已买按确认购买日期累计。假设累加 = 今日已买与待买合计 × 你填写的类似消费天数，不是实际支出预测。睡前记录留到设备本地时间的下一个早上 9 点复盘；不会主动推送通知，也不能拦截购物。</dd></div>
+      <div><dt>小额累加与睡前模式</dt><dd>今日待买按加入日期累计，今日已买和本月已买按确认购买日期累计。重复消费试算默认折叠，次数由你填写；假设累加 = 今日已买与待买合计 × 次数，不计入实际支出。睡前新记录留到下一个早上 9 点；选择“明天再看”则留到下一个日历日的 9 点。时间按设备本地时区计算，不会主动推送通知，也不能拦截购物。</dd></div>
     </dl>
     <p class="dialog-note">工作时间只是一个换算视角，不代表这件东西值不值得。时间账没有扣除生活开支，也没有计入通勤、维护或转售价值；使用次数由你估计。负担账单独计入你填写的开支、还款和分期总费用。</p>
     <p class="dialog-note">冷静期从加入清单时开始。关闭网页后仍按实际经过的时间计算，重新打开即可查看；本工具不会发送通知。</p>
@@ -828,7 +835,6 @@ initSmallPurchases({toast});
     <p class="dialog-note">“仍然想买”只记录你的决定，不代表实际完成购买。</p>
   </dialog>
   <dialog id="receipt-dialog" class="receipt-dialog" aria-labelledby="receipt-title"><div class="dialog-heading"><h2 id="receipt-title">你的心动账单</h2><button type="button" class="icon-button" data-close="receipt-dialog" aria-label="关闭心动账单"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div><div class="receipt-preview" id="receipt-preview"><div class="receipt-brand">慢半拍 <span>心动账单</span></div><p id="receipt-name" class="receipt-product"></p><p id="receipt-price" class="receipt-price"></p><dl class="receipt-lines"><div><dt>换成工作时间</dt><dd id="receipt-time"></dd></div><div><dt id="receipt-uses-label">预计使用</dt><dd id="receipt-uses"></dd></div><div><dt>达到我设定的单次成本</dt><dd id="receipt-standard"></dd></div><div><dt id="receipt-goal-label">另一种选择</dt><dd id="receipt-goal"></dd></div></dl><p id="receipt-wait" class="receipt-wait"></p><p class="receipt-bottom">买不买，由你决定。</p></div><div class="receipt-buttons"><button type="button" id="download-receipt" class="primary-button">保存为图片</button><button type="button" id="copy-receipt" class="secondary-button">复制文字</button></div><p class="dialog-note">账单不展示收入数字。计算依据是你填写的价格、工作时间、预计使用次数和个人目标。</p></dialog>
-  <dialog id="small-review-dialog" aria-labelledby="small-review-title"><div class="dialog-heading"><h2 id="small-review-title">睡醒了，还想买吗？</h2><button type="button" class="icon-button" data-close="small-review-dialog" aria-label="关闭小单复盘">×</button></div><p id="small-review-product" class="review-product"></p><p id="small-review-time" class="dialog-lead"></p><ul class="review-questions"><li>现在还记得为什么想买吗？</li><li>如果没有折扣、凑单和推荐，还会买它吗？</li></ul><div class="review-actions"><button type="button" id="small-release" class="primary-button">不买了，放下</button><button type="button" id="small-bought" class="secondary-button">已经买了，记为支出</button><button type="button" id="small-later" class="text-button">还没决定，再等到下个早上</button></div><p class="dialog-note">只有确认“已经买了”才会计入已买金额；不买不会记成已节省。</p></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toast-message"></span><button type="button" id="toast-undo" hidden>撤销</button></div>
 </body>
 </html>
