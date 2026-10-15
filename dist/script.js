@@ -71,7 +71,7 @@ function budgetPlan(v) {
   const upfront=installment?cents(v.down):price,financed=price-upfront;
   const monthly=installment?(financed+cents(v.fee))/v.months:0;
   const base=income-expenses-debt,reserve=(expenses+debt)*v.reserveMonths;
-  const cashLeft=cash-upfront,available=Math.max(0,cash-reserve),gap=Math.max(0,price-available),monthlyLeft=base-monthly;
+  const cashLeft=cash-upfront,gap=Math.max(0,price+reserve-cash),monthlyLeft=base-monthly;
   return {cashLeft:cashLeft/100,reserve:reserve/100,monthly:monthly/100,monthlyLeft:monthlyLeft/100,base:base/100,financed:financed/100,gap:gap/100,savingMonths:gap===0?0:base>0?Math.ceil(gap/base):null,upfrontShort:cashLeft<0,reserveShort:cashLeft<reserve,monthlyShort:monthlyLeft<0,installment};
 }
 
