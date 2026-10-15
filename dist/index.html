@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#193e34">
-  <meta name="description" content="买之前，先看一眼以后。预演闲置成本、算算要用多少次、对比自己的储蓄目标，再生成一张心动账单。">
+  <meta name="description" content="买之前，先看一眼以后。算清单件负担，累计小额消费，把睡前的心动留到明早再决定。">
   <title>慢半拍 · 冲动消费冷静器</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./styles.css">
@@ -24,9 +24,22 @@
   <main class="shell" id="top">
     <section class="intro" aria-labelledby="page-title">
       <h1 id="page-title">买之前，先看一眼以后。</h1>
-      <p>一件想买的东西，多一个角度，看清这次消费。</p>
+      <p>大件算清楚，小单也别悄悄攒成一大笔。</p>
     </section>
 
+    <div class="tool-modes" role="group" aria-label="选择消费工具"><button type="button" data-tool="single" class="selected" aria-pressed="true" aria-controls="single-tool">单件试算</button><button type="button" data-tool="small" aria-pressed="false" aria-controls="small-tool">小额累加</button><button type="button" data-tool="night" aria-pressed="false" aria-controls="small-tool">睡前先记下</button></div>
+    <section id="small-tool" class="small-tool" aria-labelledby="small-title" hidden>
+      <div class="small-heading"><div><p class="small-eyebrow" id="small-eyebrow">小单，也有总价</p><h2 id="small-title">每件都不贵，今天一共呢？</h2><p id="small-lead">只记一笔价格，就能看到小额消费的累积。</p></div><button type="button" class="text-button" id="small-night-toggle" aria-pressed="false">开启睡前模式</button></div>
+      <p id="small-storage-warning" class="storage-warning" role="status" hidden></p>
+      <div class="small-stats" aria-live="polite"><div><span>今天已买</span><output id="small-today-bought">¥0.00</output></div><div><span>今天待买</span><output id="small-today-planned">¥0.00</output></div><div><span>本月已买</span><output id="small-month-bought">¥0.00</output></div></div>
+      <p class="small-stat-note" id="small-stat-note">待买不算已支出，放下不算已节省。</p>
+      <form id="small-form" class="small-form" novalidate><div class="field"><label for="small-name">想买什么 <span>可不填</span></label><div class="input-wrap"><input type="text" id="small-name" maxlength="60" placeholder="比如：又一件打折的 T 恤" autocomplete="off"></div></div><div class="field"><label for="small-price">这一笔多少钱</label><div class="input-wrap"><span class="affix" aria-hidden="true">¥</span><input type="number" id="small-price" min="0.01" max="100000000" step="0.01" inputmode="decimal" placeholder="0.00" required aria-describedby="small-error"></div></div><div class="small-entry-buttons"><button type="submit" class="primary-button" id="small-add">先记下，暂时不买</button><button type="button" class="secondary-button" id="small-add-bought">已经买了，记一笔</button></div><p class="inline-error" id="small-error" role="status"></p></form>
+      <p id="small-night-note" class="small-night-note" hidden>现在只做一件事：记下，先不付款。下一个早上 9 点再一起看。网页不会拦截购物，也不会主动推送提醒。</p>
+      <div class="small-projection"><div><h3>如果这样的消费，不止一次呢？</h3><p>按今天已买 + 待买合计试算；假设待买也全部买下，不是实际支出预测。</p></div><label for="small-frequency">每月类似 <input type="number" id="small-frequency" value="8" min="1" max="31" step="1" inputmode="numeric" aria-describedby="small-projection-text"> 天</label><p id="small-projection-text" aria-live="polite">先记下一笔，再看看累加后的金额。</p></div>
+      <div class="small-list-heading"><h3>记下来的小单 <span id="small-pending-count"></span></h3><label for="small-history"><input type="checkbox" id="small-history"> 显示全部历史</label></div><p id="small-empty" class="empty-state">还没有小单。下次想说“才几十块”时，先记在这里。</p><div id="small-list" class="small-list"></div>
+      <p class="scene-note subtle small-privacy">仅统计你手动记录的小单，不读取购物平台或支付账单，也不与单件冷静清单合并。数据只保存在当前浏览器；清除数据或更换设备可能丢失。日期和早上 9 点按设备本地时区计算。</p>
+    </section>
+    <div id="single-tool">
     <form class="calculator" id="calculator" novalidate>
       <section class="input-panel panel" aria-labelledby="input-title">
         <div class="panel-heading"><h2 id="input-title">这次，想买什么？</h2><button type="button" class="text-button" id="try-example"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 8a7 7 0 0 1 12-2l2 3M18 16A7 7 0 0 1 6 18l-2-3"></path></svg>换个例子</button></div>
@@ -140,6 +153,7 @@
       <div class="list-summary" id="list-summary" hidden><span>正在冷静 <strong id="summary-count">0</strong> 件</span><span>暂缓消费 <strong id="summary-money">¥0.00</strong></span><span class="summary-note">暂缓金额不等于已节省金额</span></div>
     </section>
 
+    </div>
     <footer class="site-footer"><span class="mini-brand"><span class="pause-mark small" aria-hidden="true"><i></i><i></i></span>慢半拍</span><span class="footer-divider"></span><span>买不买，由你决定。</span></footer>
   </main>
 
@@ -153,6 +167,7 @@
       <div><dt>占月收入比例</dt><dd>商品价格 ÷ 每月到手收入 × 100%</dd></div>
       <div><dt>用多少次才达到你的标准</dt><dd>商品价格 ÷ 你愿意承担的每次成本，向上取整数。所需周数 = 次数 ÷ 每周预计使用次数，再向上取整。</dd></div>
       <div><dt>另一种选择</dt><dd>商品价格 ÷ 你填写的目标金额。进度条展示目前已存，以及假设再存入商品价格后的进度，显示上限为 100%。</dd></div>
+      <div><dt>小额累加与睡前模式</dt><dd>今日待买按加入日期累计，今日已买和本月已买按确认购买日期累计。假设累加 = 今日已买与待买合计 × 你填写的类似消费天数，不是实际支出预测。睡前记录留到设备本地时间的下一个早上 9 点复盘；不会主动推送通知，也不能拦截购物。</dd></div>
     </dl>
     <p class="dialog-note">工作时间只是一个换算视角，不代表这件东西值不值得。时间账没有扣除生活开支，也没有计入通勤、维护或转售价值；使用次数由你估计。负担账单独计入你填写的开支、还款和分期总费用。</p>
     <p class="dialog-note">冷静期从加入清单时开始。关闭网页后仍按实际经过的时间计算，重新打开即可查看；本工具不会发送通知。</p>
@@ -169,6 +184,7 @@
     <p class="dialog-note">“仍然想买”只记录你的决定，不代表实际完成购买。</p>
   </dialog>
   <dialog id="receipt-dialog" class="receipt-dialog" aria-labelledby="receipt-title"><div class="dialog-heading"><h2 id="receipt-title">你的心动账单</h2><button type="button" class="icon-button" data-close="receipt-dialog" aria-label="关闭心动账单"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div><div class="receipt-preview" id="receipt-preview"><div class="receipt-brand">慢半拍 <span>心动账单</span></div><p id="receipt-name" class="receipt-product"></p><p id="receipt-price" class="receipt-price"></p><dl class="receipt-lines"><div><dt>换成工作时间</dt><dd id="receipt-time"></dd></div><div><dt id="receipt-uses-label">预计使用</dt><dd id="receipt-uses"></dd></div><div><dt>达到我设定的单次成本</dt><dd id="receipt-standard"></dd></div><div><dt id="receipt-goal-label">另一种选择</dt><dd id="receipt-goal"></dd></div></dl><p id="receipt-wait" class="receipt-wait"></p><p class="receipt-bottom">买不买，由你决定。</p></div><div class="receipt-buttons"><button type="button" id="download-receipt" class="primary-button">保存为图片</button><button type="button" id="copy-receipt" class="secondary-button">复制文字</button></div><p class="dialog-note">账单不展示收入数字。计算依据是你填写的价格、工作时间、预计使用次数和个人目标。</p></dialog>
+  <dialog id="small-review-dialog" aria-labelledby="small-review-title"><div class="dialog-heading"><h2 id="small-review-title">睡醒了，还想买吗？</h2><button type="button" class="icon-button" data-close="small-review-dialog" aria-label="关闭小单复盘">×</button></div><p id="small-review-product" class="review-product"></p><p id="small-review-time" class="dialog-lead"></p><ul class="review-questions"><li>现在还记得为什么想买吗？</li><li>如果没有折扣、凑单和推荐，还会买它吗？</li></ul><div class="review-actions"><button type="button" id="small-release" class="primary-button">不买了，放下</button><button type="button" id="small-bought" class="secondary-button">已经买了，记为支出</button><button type="button" id="small-later" class="text-button">还没决定，再等到下个早上</button></div><p class="dialog-note">只有确认“已经买了”才会计入已买金额；不买不会记成已节省。</p></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toast-message"></span><button type="button" id="toast-undo" hidden>撤销</button></div>
 </body>
 </html>

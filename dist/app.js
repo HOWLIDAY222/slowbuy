@@ -1,4 +1,5 @@
 import {STORAGE_KEY,MAX_ITEMS,EXAMPLES,validate,calculate,usagePlan,goalComparison,budgetPlan,decodeRecords,remainingLabel} from './core.mjs';
+import {initSmallPurchases} from './small-ui.mjs';
 
 const $=id=>document.getElementById(id);
 const form=$('calculator');
@@ -333,4 +334,5 @@ $('budget-example').addEventListener('click',()=>{
 });
 
 records=load();updateCalculation(false);renderList();
+initSmallPurchases({toast});
 
