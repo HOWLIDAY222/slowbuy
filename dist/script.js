@@ -372,14 +372,17 @@ function updateBudget(data=values()){
  $('budget-installment').hidden=!installment;$('budget-installment-note').hidden=!installment;
  const map={cash:'budget-cash',expenses:'budget-expenses',debt:'budget-debt',reserveMonths:'budget-reserve',down:'budget-down',months:'budget-months',fee:'budget-fee'};
  const v={price:data.price,income:data.income,payment};
- for(const [key,id]of Object.entries(map))v[key]=numberValue(id);
+ for(const [key,id]of Object.entries(map))v[key]=['down','fee'].includes(key)&&$(id).value.trim()===''?0:numberValue(id);
+ const quote=budgetPlan({...v,cash:0,expenses:0,debt:0,reserveMonths:0,income:0});
+ $('budget-quote').hidden=!installment;
+ $('budget-quote').textContent=quote?'每期约 '+yuan.format(quote.monthly)+' × '+v.months+' 期；首付 '+yuan.format(v.down)+'。':'填写有效的商品价格、1–120 期；首付不能超过商品价格，总费用不能小于 0。';
  const result=budgetPlan(v);
  for(const [key,id]of Object.entries(map)){
    const active=installment||!['down','months','fee'].includes(key);
    const valid=!active||(Number.isFinite(v[key])&&v[key]>=0&&v[key]<=1e8&&(key!=='reserveMonths'||Number.isInteger(v[key])&&v[key]<=120)&&(key!=='months'||Number.isInteger(v[key])&&v[key]>=1&&v[key]<=120)&&(key!=='down'||v[key]<=v.price));
    if(valid)$(id).removeAttribute('aria-invalid');else $(id).setAttribute('aria-invalid','true');
  }
- $('budget-error').textContent=result?'':'填写存款、必要开支和已有还款，没有填 0；预留月数为 0–120 的整数。分期需填写不超过价格的首付、1–120 期及总费用，并检查商品价格和收入。';
+ $('budget-error').textContent=result?'':'填写存款、必要开支和已有还款，没有填 0；预留月数为 0–120 的整数。分期请填写 1–120 期；首付和总费用留空按 0 计算，首付不能超过价格。请同时检查商品价格和收入。';
  $('budget-results').hidden=!result;if(!result)return;
  $('budget-cash-left').textContent=yuan.format(result.cashLeft);
  $('budget-protected').textContent=yuan.format(result.reserve);
